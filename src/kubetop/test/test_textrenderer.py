@@ -78,9 +78,9 @@ class ContainersTests(TestCase):
         }
         self.assertEqual(
             "                    "
-            "                         (foo)"
-            "      100m"
-            "     200Mi"
+            "                     (foo)"
+            "        100m"
+            "     200 MiB"
             "          "
             "\n",
             _render_container(container),
