@@ -23,7 +23,7 @@ from treq.client import HTTPClient
 from txkube import IKubernetes, network_kubernetes_from_context
 
 
-def source(reactor, config_path, context_name):
+def make_source(reactor, config_path, context_name):
     """
     Get a source of Kubernetes resource usage data.
     """
