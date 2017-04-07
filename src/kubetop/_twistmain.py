@@ -58,10 +58,12 @@ class TwistMain(object):
     exit_status = 0
     exit_message = None
 
-
-    def set_exit_reason(self, reason):
-        self.exit_status = 1
-        self.exit_message = reason.getTraceback()
+    def exit(self, reason=None):
+        if reason is not None:
+            self.exit_status = 1
+            self.exit_message = reason.getTraceback()
+        from twisted.internet import reactor
+        reactor.stop()
 
 
     def __call__(self):
