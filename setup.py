@@ -18,8 +18,14 @@ setup(
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     install_requires=[
+        "pyyaml",
         "twisted",
         "treq",
         "txkube",
     ],
+    entry_points={
+        "console_scripts": [
+            "kubetop = kubetop._script:main",
+        ],
+    },
 )
