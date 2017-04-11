@@ -19,49 +19,49 @@ from .._textrenderer import (
 class RenderMemoryTests(TestCase):
     def test_bytes(self):
         self.assertEqual(
-            "123 Byte",
+            "  123.00 Byte",
             _render_memory(Byte(123)),
         )
 
 
     def test_kibibytes(self):
         self.assertEqual(
-            "12.5 KiB",
+            "   12.50 KiB",
             _render_memory(Byte(1024 * 12 + 512)),
         )
 
 
     def test_mebibytes(self):
         self.assertEqual(
-            "123.25 MiB",
+            "  123.25 MiB",
             _render_memory(Byte(2 ** 20 * 123 + 2 ** 20 / 4)),
         )
 
 
     def test_gibibytes(self):
         self.assertEqual(
-            "1.05 GiB",
+            "    1.05 GiB",
             _render_memory(Byte(2 ** 30 + 2 ** 30 / 20)),
         )
 
 
     def test_tebibytes(self):
         self.assertEqual(
-            "100 TiB",
+            "  100.00 TiB",
             _render_memory(Byte(2 ** 40 * 100)),
         )
 
 
     def test_pebibytes(self):
         self.assertEqual(
-            "100 PiB",
+            "  100.00 PiB",
             _render_memory(Byte(2 ** 50 * 100)),
         )
 
 
     def test_exbibytes(self):
         self.assertEqual(
-            "100 EiB",
+            "  100.00 EiB",
             _render_memory(Byte(2 ** 60 * 100)),
         )
 
@@ -80,7 +80,7 @@ class ContainersTests(TestCase):
             "                    "
             "                     (foo)"
             "        100m"
-            "     200 MiB"
+            "  200.00 MiB"
             "          "
             "\n",
             _render_container(container),
