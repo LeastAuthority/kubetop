@@ -137,7 +137,7 @@ def _render_container(container):
 
 def _render_memory(amount):
     amount = amount.best_prefix()
-    return "{:g} {}".format(float(amount), amount.unit_singular)
+    return "{:8.2f} {}".format(float(amount), amount.unit_singular)
 
 
 def partition(seq, pred):
