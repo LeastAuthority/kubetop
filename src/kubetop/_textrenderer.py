@@ -13,6 +13,8 @@ Theory of Operation
 
 from __future__ import unicode_literals
 
+from datetime import datetime
+
 from bitmath import Byte
 
 COLUMNS = [
@@ -24,12 +26,12 @@ COLUMNS = [
 ]
 
 
-def kubetop(datasource, datasink):
-    return datasource.pods().addCallback(_render_kubetop, datasink)
+def kubetop(reactor, datasource, datasink):
+    return datasource.pods().addCallback(_render_kubetop, datasink, reactor)
 
 
-def _render_kubetop(data, sink):
-    sink.write(_render_pod_top(data))
+def _render_kubetop(data, sink, reactor):
+    sink.write(_render_pod_top(reactor, data))
 
 
 def _render_row(*values):
@@ -42,8 +44,20 @@ def _render_row(*values):
     return "".join(fields) + "\n"
 
 
-def _render_pod_top(data):
+def _clear():
+    return "\x1b[2J\x1b[1;1H"
+
+
+def _render_clockline(reactor):
+    return "kubetop - {}\n".format(
+        datetime.fromtimestamp(reactor.seconds()).strftime("%H:%m:%S")
+    )
+
+
+def _render_pod_top(reactor, data):
     return "".join((
+        _clear(),
+        _render_clockline(reactor),
         _render_header(data),
         _render_pods(data["items"]),
     ))

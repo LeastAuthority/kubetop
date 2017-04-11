@@ -14,13 +14,14 @@ Theory of Operation
 
 from yaml import safe_load
 
+from itertools import repeat
 from os.path import expanduser
 
 from twisted.python.usage import Options
 from twisted.python.filepath import FilePath
 
 from ._twistmain import TwistMain
-from ._runonce import run_once_service
+from ._runmany import run_many_service
 from ._textrenderer import kubetop
 
 CONFIG = FilePath(expanduser("~/.kube/config"))
@@ -34,7 +35,16 @@ def current_context(config_path):
 class KubetopOptions(Options):
     optParameters = [
         ("context", None, current_context(CONFIG), "The kubectl context to use."),
+        ("interval", None, 3.0, "The number of seconds between iterations.", float),
+        ("iterations", None, None, "The number of iterations to perform.", int),
     ]
+
+
+
+def fixed_intervals(interval, iterations):
+    if iterations is None:
+        return repeat(interval)
+    return repeat(interval, iterations)
 
 
 
@@ -47,9 +57,13 @@ def makeService(main, options):
     from ._topdata import make_source
 
     import sys
+    f = lambda: kubetop(reactor, s, sys.__stdout__)
 
     s = make_source(reactor, CONFIG, options["context"])
-    return run_once_service(main, reactor, lambda: kubetop(s, sys.__stdout__))
+    return run_many_service(
+        main, reactor, f,
+        fixed_intervals(options["interval"], options["iterations"]),
+    )
 
 
 main = TwistMain(KubetopOptions, makeService)

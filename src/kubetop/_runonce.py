@@ -32,6 +32,19 @@ class _RunOnceService(Service):
 
 
 def run_once_service(main, reactor, f):
+    """
+    Create a service to run a function once.
+
+    :param TwistMain main: The main entrypoint object.
+
+    :param IReactorCore reactor: Only call ``f`` after this reactor has
+        started up.
+
+    :param f: A zero-argument callable to repeatedly call.
+
+    :return IService: A service which will run the function and then exit
+        ``main`` loop.
+    """
     s = _RunOnceService()
     s.main = main
     s.reactor = reactor
