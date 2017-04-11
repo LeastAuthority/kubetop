@@ -11,7 +11,9 @@ Theory of Operation
    output-capable target (e.g. a file descriptor).
 """
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, division
+
+from twisted.internet.defer import gatherResults
 
 from datetime import datetime
 
@@ -27,7 +29,9 @@ COLUMNS = [
 
 
 def kubetop(reactor, datasource, datasink):
-    return datasource.pods().addCallback(_render_kubetop, datasink, reactor)
+    return gatherResults([
+        datasource.nodes(), datasource.pods(),
+    ]).addCallback(_render_kubetop, datasink, reactor)
 
 
 def _render_kubetop(data, sink, reactor):
@@ -54,21 +58,100 @@ def _render_clockline(reactor):
     )
 
 
-def _render_pod_top(reactor, data):
+def _render_pod_top(reactor, (node_info, pod_info)):
+    nodes = node_info["info"]["items"]
+    node_usage = node_info["usage"]["items"]
+
+    pods = pod_info["info"].items
+    pod_usage = pod_info["usage"]["items"]
+
     return "".join((
         _clear(),
         _render_clockline(reactor),
-        _render_header(data),
-        _render_pods(data["items"]),
+        _render_nodes(nodes, node_usage, pods),
+        _render_header(nodes, pods),
+        _render_pods(pod_usage),
     ))
 
 
-def _render_header(data):
+def _render_header(nodes, pods):
     return _render_row(*(
         label
         for (width, label)
         in COLUMNS
     ))
+
+
+def _render_nodes(nodes, node_usage, pods):
+    usage_by_name = {
+        usage["metadata"]["name"]: usage
+        for usage
+        in node_usage
+    }
+    def pods_for_node(node):
+        return list(
+            pod
+            for pod
+            in pods
+            if pod.status is not None and pod.status.hostIP in (
+                addr["address"] for addr in node["status"]["addresses"]
+            )
+        )
+
+    return "".join(
+        "Node {} {}\n".format(
+            i,
+            _render_node(
+                node,
+                usage_by_name[node["metadata"]["name"]],
+                pods_for_node(node),
+            ),
+        )
+        for i, node
+        in enumerate(nodes)
+    )
+
+
+def _render_node(node, usage, pods):
+    # From v1.NodeStatus model documentation:
+    #
+    #     Allocatable represents the resources of a node that are available
+    #     for scheduling. Defaults to Capacity.
+    allocatable = node["status"]["allocatable"]
+
+    cpu_max = parse_cpu(allocatable["cpu"])
+    cpu_used = parse_cpu(usage["usage"]["cpu"])
+
+    mem_max = parse_memory(allocatable["memory"])
+    mem_used = parse_memory(usage["usage"]["memory"])
+
+    pod_count = len(pods)
+    pod_max = int(allocatable["pods"])
+
+    if any(
+            condition["type"] == "Ready" and condition["status"] == "True"
+            for condition
+            in node["status"]["conditions"]
+    ):
+        condition = "Ready"
+    else:
+        condition = "NotReady"
+
+    return (
+        "CPU% {cpu:>6.2f} "
+        "MEM% {mem:>5.2f} ({mem_used}/{mem_max})  "
+        "POD% {pod:>5.2f} ({pod_count:3}/{pod_max:3}) "
+        "{condition}"
+    ).format(
+        cpu=cpu_used / cpu_max * 100,
+        mem=mem_used / mem_max * 100,
+        mem_used=_render_memory(mem_used, "4.0"),
+        mem_max=_render_memory(mem_max, "4.0"),
+        pod=pod_count / pod_max * 100,
+        pod_count=pod_count,
+        pod_max=pod_max,
+        condition=condition,
+    )
 
 
 def _render_pods(pods):
@@ -135,9 +218,9 @@ def _render_container(container):
     )
 
 
-def _render_memory(amount):
+def _render_memory(amount, fmt="8.2"):
     amount = amount.best_prefix()
-    return "{:8.2f} {}".format(float(amount), amount.unit_singular)
+    return ("{:" + fmt + "f} {}").format(float(amount), amount.unit_singular)
 
 
 def partition(seq, pred):
@@ -148,22 +231,24 @@ def partition(seq, pred):
 
 
 def parse_cpu(s):
-    return parse_k8s_resource(s)
+    return parse_k8s_resource(s, default_scale=1000)
 
 
 def parse_memory(s):
-    return Byte(parse_k8s_resource(s))
+    return Byte(parse_k8s_resource(s, default_scale=1))
 
 
-def parse_k8s_resource(s):
+def parse_k8s_resource(s, default_scale):
     amount, suffix = partition(s, unicode.isdigit)
-    scale = suffix_scale(suffix)
+    try:
+        scale = suffix_scale(suffix)
+    except KeyError:
+        scale = default_scale
     return int(amount) * scale
 
 
 def suffix_scale(suffix):
     return {
-        "": 1,
         "m": 1,
         "K": 2 ** 10,
         "Ki": 2 ** 10,

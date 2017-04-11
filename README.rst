@@ -30,19 +30,19 @@ Output Sample
 
 .. code-block::
 
-   kubetop - 11:36:03       1m0s window
+   kubetop - 13:04:31
+   Node 0 CPU%  10.20 MEM% 55.63 (   2 GiB/   4 GiB)  POD%  7.27 (  8/110) Ready
+   Node 1 CPU%   6.70 MEM% 26.84 (1011 MiB/   4 GiB)  POD%  7.27 (  8/110) Ready
+   Node 2 CPU%  11.90 MEM% 36.53 (   1 GiB/   4 GiB)  POD%  0.91 (  1/110) Ready
    Pods:     123 total      7 Running     3 Terminating     1 Pending
-   %Node0:   CPU 35%        MEM 20% (12/48GiB)
-   %Node1:   CPU 30%        MEM 25% (25/100GiB)
-   %Node2:   CPU 25%        MEM 50% (15/30GiB)
-
-   POD     (CONTAINER)                          %CPU      MEM     %MEM
-   infrastructure-216976705-nkn7r                 13   123MiB       11
-                 (web)                             6    80MiB        7
-		 (db)                              7    43MiB        4
-   billing-230948372-nnmxwui                       3   123MiB       11
-                 (api)                             1    80MiB        7
-		 (db)                              2    43MiB        4
+                    POD               (CONTAINER)        %CPU         MEM      %MEM
+   s4-infrastructure-216976705-nkn7r                        1  127.43 MiB  130488.0
+                                            (web)          1m   45.88 MiB
+                                          (flapp)           0   35.28 MiB
+                                 (wormhole-relay)           0   24.80 MiB
+                          (foolscap-log-gatherer)           0   21.47 MiB
+   image-building-3987116516-g6s93                          0   13.34 MiB   13656.0
+                                 (image-building)           0   13.34 MiB
 
 Installing
 ----------
