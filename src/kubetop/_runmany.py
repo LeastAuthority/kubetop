@@ -8,9 +8,9 @@ startup/shutdown interfaces.
 Theory of Operation
 ===================
 
-#. Convert operational configuration to a kubetop rendering object.
 #. Glue kubetop rendering object together with a time-based trigger (for periodic re-rendering).
 #. Wrap the trigger up in an ``IService`` which can be started and stopped.
+#. Deliver rendering success/failure to the main object for reporting and exit.
 """
 
 from twisted.python.failure import Failure
