@@ -50,7 +50,7 @@ def _clear():
 
 def _render_clockline(reactor):
     return "kubetop - {}\n".format(
-        datetime.fromtimestamp(reactor.seconds()).strftime("%H:%m:%S")
+        datetime.fromtimestamp(reactor.seconds()).strftime("%H:%M:%S")
     )
 
 
