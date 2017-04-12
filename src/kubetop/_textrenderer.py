@@ -24,7 +24,7 @@ COLUMNS = [
     (26, "(CONTAINER)"),
     (12, "%CPU"),
     (12, "MEM"),
-    (10, "%MEM")
+    (7, "%MEM")
 ]
 
 
@@ -71,7 +71,7 @@ def _render_pod_top(reactor, (node_info, pod_info)):
         _render_nodes(nodes, node_usage, pods),
         _render_pod_phase_counts(pods),
         _render_header(nodes, pods),
-        _render_pods(pod_usage),
+        _render_pods(pods, pod_usage, nodes),
     ))
 
 
@@ -113,9 +113,7 @@ def _render_nodes(nodes, node_usage, pods):
             pod
             for pod
             in pods
-            if pod.status is not None and pod.status.hostIP in (
-                addr["address"] for addr in node["status"]["addresses"]
-            )
+            if _pod_on_node(pod, node)
         )
 
     return "".join(
@@ -174,11 +172,38 @@ def _render_node(node, usage, pods):
     )
 
 
-def _render_pods(pods):
-    pod_data = (
-        (_render_pod(pod), _render_containers(pod["containers"]))
+def _pod_on_node(pod, node):
+    return pod.status is not None and pod.status.hostIP in (
+        addr["address"] for addr in node["status"]["addresses"]
+    )
+
+
+def _node_allocable_memory(pod, nodes):
+    for node in nodes:
+        if _pod_on_node(pod, node):
+            return parse_memory(node["status"]["allocatable"]["memory"])
+    return None
+
+
+def _render_pods(pods, pod_usage, nodes):
+    pod_by_name = {
+        pod.metadata.name: pod
         for pod
-        in sorted(pods, key=_pod_stats, reverse=True)
+        in pods
+    }
+    pod_data = (
+        (
+            _render_pod(
+                usage,
+                _node_allocable_memory(
+                    pod_by_name[usage["metadata"]["name"]],
+                    nodes,
+                ),
+            ),
+            _render_containers(usage["containers"]),
+        )
+        for usage
+        in sorted(pod_usage, key=_pod_stats, reverse=True)
     )
     return "".join(
         rendered_pod + rendered_containers
@@ -209,14 +234,20 @@ def _pod_stats(pod):
     return (cpu, mem)
 
 
-def _render_pod(pod):
+def _render_pod(pod, node_allocable_memory):
     cpu, mem = _pod_stats(pod)
+
+    if node_allocable_memory is None:
+        mem_percent = ""
+    else:
+        mem_percent = "{:>5.2}".format(mem / node_allocable_memory * 100)
+
     return _render_row(
         pod["metadata"]["name"],
         "",
         cpu,
         _render_memory(mem),
-        mem / Byte(1024),
+        mem_percent,
     )
 
 

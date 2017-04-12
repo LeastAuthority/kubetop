@@ -35,13 +35,13 @@ Output Sample
    Node 1 CPU%   6.70 MEM% 26.84 (1011 MiB/   4 GiB)  POD%  7.27 (  8/110) Ready
    Node 2 CPU%  11.90 MEM% 36.53 (   1 GiB/   4 GiB)  POD%  0.91 (  1/110) Ready
    Pods:     123 total      7 Running     3 Terminating     1 Pending
-                    POD               (CONTAINER)        %CPU         MEM      %MEM
-   s4-infrastructure-216976705-nkn7r                        1  127.43 MiB  130488.0
+                    POD               (CONTAINER)        %CPU         MEM   %MEM
+   s4-infrastructure-216976705-nkn7r                        1  127.43 MiB   3.10
                                             (web)          1m   45.88 MiB
                                           (flapp)           0   35.28 MiB
                                  (wormhole-relay)           0   24.80 MiB
                           (foolscap-log-gatherer)           0   21.47 MiB
-   image-building-3987116516-g6s93                          0   13.34 MiB   13656.0
+   image-building-3987116516-g6s93                          0   13.34 MiB   0.31
                                  (image-building)           0   13.34 MiB
 
 Installing
