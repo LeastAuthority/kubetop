@@ -272,11 +272,19 @@ def _pod_stats(pod):
     return (_CPU(cpu), _Memory(mem))
 
 
+def _render_limited_width(s, w):
+    if len(s) <= w:
+        return s
+    return s[:w - 1] + "\N{HORIZONTAL ELLIPSIS}"
+
+
 def _render_pod(pod, node_allocable_memory):
     cpu, mem = _pod_stats(pod)
     mem_percent = node_allocable_memory.render_percentage(mem)
     return _render_row(
-        pod["metadata"]["name"],
+        # Limit rendered name to combined width of the pod and container
+        # columns.
+        _render_limited_width(pod["metadata"]["name"], 46),
         "",
         _CPU(1000).render_percentage(cpu),
         mem.render("8.2"),
