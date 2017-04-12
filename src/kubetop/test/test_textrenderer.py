@@ -84,7 +84,7 @@ class ContainersTests(TestCase):
             "                     (foo)"
             "        100m"
             "  200.00 MiB"
-            "          "
+            "       "
             "\n",
             _render_container(container),
         )

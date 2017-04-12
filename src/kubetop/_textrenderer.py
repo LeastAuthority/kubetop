@@ -24,7 +24,7 @@ COLUMNS = [
     (26, "(CONTAINER)"),
     (12, "%CPU"),
     (12, "MEM"),
-    (10, "%MEM")
+    (7, "%MEM")
 ]
 
 
