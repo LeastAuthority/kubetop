@@ -332,7 +332,7 @@ class NodeTests(TestCase):
 
         self.assertEqual(
             "Node 0 "
-            "CPU%  6.80 "
+            "CPU%   6.80 "
             "MEM% 50.00 ( 100 KiB/ 200 KiB)  "
             "POD%  0.91 (  1/110) "
             "Ready\n",
