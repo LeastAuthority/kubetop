@@ -1,0 +1,35 @@
+#
+# This is the Travis-CI configuration.
+#
+
+language: "python"
+
+# This is how you get container-based environments on Travis-CI.  And
+# container-based environments are how you get fast test runs.
+sudo: false
+
+# Only build master; for "push" builds, this is when the branch pushed
+# to is master, for "pr" builds, this is when the merge base of the PR
+# is master.
+branches:
+  only:
+    - "master"
+
+cache:
+  directories:
+    # Cache the pip download cache across runs to avoid having to
+    # repeatedly download packages over the network.
+    - "$HOME/.cache/pip"
+
+install:
+  - "pip install --upgrade pip setuptools wheel coverage codecov pyflakes"
+  - "pip install ."
+
+script:
+  - "pyflakes src"
+  - "coverage run --rcfile=${PWD}/.coveragerc $(type -p trial) kubetop"
+  # See .coveragerc for an explanation of this step.
+  - "coverage combine .coverage"
+
+after_success:
+  - "codecov"
