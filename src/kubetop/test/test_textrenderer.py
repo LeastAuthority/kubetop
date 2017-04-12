@@ -117,7 +117,35 @@ class ContainersTests(TestCase):
 
 class PodTests(TestCase):
     def test_render_several(self):
+        name = "alpha"
+
+        nodes = [
+            v1.Node(
+                metadata=v1.ObjectMeta(
+                    name=name,
+                ),
+                status=v1.NodeStatus(
+                    allocatable={
+                        "memory": "100MiB",
+                    },
+                ),
+            ),
+        ]
+
         pods = [
+            v1.Pod(
+                metadata=v1.ObjectMeta(
+                    name="foo",
+                ),
+            ),
+            v1.Pod(
+                metadata=v1.ObjectMeta(
+                    name="bar",
+                ),
+            ),
+        ]
+
+        pod_usage = [
             {
                 "metadata": {
                     "name": "foo",
@@ -172,7 +200,7 @@ class PodTests(TestCase):
         lines = list(
             line
             for line
-            in _render_pods(pods).splitlines()
+            in _render_pods(pods, pod_usage, nodes).splitlines()
             if not line.strip().startswith("(")
         )
         self.assertEqual(
@@ -332,7 +360,7 @@ class NodeTests(TestCase):
 
         self.assertEqual(
             "Node 0 "
-            "CPU%  6.80 "
+            "CPU%   6.80 "
             "MEM% 50.00 ( 100 KiB/ 200 KiB)  "
             "POD%  0.91 (  1/110) "
             "Ready\n",
