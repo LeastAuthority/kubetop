@@ -69,9 +69,29 @@ def _render_pod_top(reactor, (node_info, pod_info)):
         _clear(),
         _render_clockline(reactor),
         _render_nodes(nodes, node_usage, pods),
+        _render_pod_phase_counts(pods),
         _render_header(nodes, pods),
         _render_pods(pod_usage),
     ))
+
+
+def _render_pod_phase_counts(pods):
+    phases = {}
+    for pod in pods:
+        phases[pod.status.phase] = phases.get(pod.status.phase, 0) + 1
+
+    return (
+        "Pods: "
+        "{total:>8} total "
+        "{running:>8} running "
+        "{terminating:>8} terminating "
+        "{pending:>8} pending\n"
+    ).format(
+        total=len(pods),
+        running=phases.get("running", 0),
+        terminating=phases.get("terminating", 0),
+        pending=phases.get("pending", 0),
+    )
 
 
 def _render_header(nodes, pods):
