@@ -1,0 +1,18 @@
+# See http://coverage.readthedocs.io/en/coverage-4.3.4/config.html#run
+[run]
+# We want branch coverage measurement (we want as much measurement as possible).
+branch = True
+
+# This identifies the packages for which to measure coverage.
+source = kubetop
+
+# See http://coverage.readthedocs.io/en/coverage-4.3.4/config.html#paths
+[paths]
+
+# Together with a call to `coverage combine .coverage` this causes kubetop's
+# source files to appear as "src/kubetop" in the coverage report.  This is not
+# only nicer for a person to look at, it makes codecov happier (because
+# src/kubetop/... are the paths *it* sees for our source code).
+source =
+       src/kubetop
+       /home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages/kubetop
