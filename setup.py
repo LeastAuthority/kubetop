@@ -20,7 +20,7 @@ setup(
     install_requires=[
         "bitmath",
         "pyyaml",
-        "twisted",
+        "twisted[tls]",
         "treq",
         "txkube",
     ],
