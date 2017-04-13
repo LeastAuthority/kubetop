@@ -19,6 +19,9 @@ from datetime import datetime
 
 from bitmath import Byte
 
+import attr
+from attr import validators
+
 COLUMNS = [
     (20, "POD"),
     (26, "(CONTAINER)"),
@@ -157,14 +160,14 @@ def _render_node(node, usage, pods):
 
     return (
         "CPU% {cpu:>6.2f} "
-        "MEM% {mem:>5.2f} ({mem_used}/{mem_max})  "
+        "MEM% {mem} ({mem_used}/{mem_max})  "
         "POD% {pod:>5.2f} ({pod_count:3}/{pod_max:3}) "
         "{condition}"
     ).format(
         cpu=cpu_used / cpu_max * 100,
-        mem=mem_used / mem_max * 100,
-        mem_used=_render_memory(mem_used, "4.0"),
-        mem_max=_render_memory(mem_max, "4.0"),
+        mem=mem_max.render_percentage(mem_used),
+        mem_used=mem_used.render("4.0"),
+        mem_max=mem_max.render("4.0"),
         pod=pod_count / pod_max * 100,
         pod_count=pod_count,
         pod_max=pod_max,
@@ -190,24 +193,24 @@ class _UnknownMemory(object):
 
 
 
+@attr.s(frozen=True)
 class _Memory(object):
-    def __init__(self, amount):
-        self.amount = amount
-
+    amount = attr.ib(validator=validators.instance_of(Byte))
 
     def render(self, fmt):
-        return _render_memory(self.amount, fmt)
+        amount = self.amount.best_prefix()
+        return ("{:" + fmt + "f} {}").format(float(amount), amount.unit_singular)
 
 
     def render_percentage(self, portion):
-        return "{:>5.2}".format(portion / self.amount * 100)
+        return "{:>5.2f}".format(portion.amount / self.amount * 100)
 
 
 
 def _node_allocable_memory(pod, nodes):
     for node in nodes:
         if _pod_on_node(pod, node):
-            return _Memory(parse_memory(node["status"]["allocatable"]["memory"]))
+            return parse_memory(node["status"]["allocatable"]["memory"])
     return _UnknownMemory()
 
 
@@ -250,14 +253,14 @@ def _pod_stats(pod):
     )
     mem = sum(
         map(
-            parse_memory, (
+            lambda s: parse_memory(s).amount, (
                 container["usage"]["memory"]
                 for container
                 in pod["containers"]
             ),
         ), Byte(0),
     )
-    return (cpu, mem)
+    return (cpu, _Memory(mem))
 
 
 def _render_pod(pod, node_allocable_memory):
@@ -267,7 +270,7 @@ def _render_pod(pod, node_allocable_memory):
         pod["metadata"]["name"],
         "",
         cpu,
-        _render_memory(mem),
+        mem.render("8.2"),
         mem_percent,
     )
 
@@ -285,14 +288,9 @@ def _render_container(container):
         "",
         "(" + container["name"] + ")",
         container["usage"]["cpu"],
-        _render_memory(parse_memory(container["usage"]["memory"])),
+        parse_memory(container["usage"]["memory"]).render("8.2"),
         "",
     )
-
-
-def _render_memory(amount, fmt="8.2"):
-    amount = amount.best_prefix()
-    return ("{:" + fmt + "f} {}").format(float(amount), amount.unit_singular)
 
 
 def partition(seq, pred):
@@ -307,7 +305,7 @@ def parse_cpu(s):
 
 
 def parse_memory(s):
-    return Byte(parse_k8s_resource(s, default_scale=1))
+    return _Memory(Byte(parse_k8s_resource(s, default_scale=1)))
 
 
 def parse_k8s_resource(s, default_scale):
