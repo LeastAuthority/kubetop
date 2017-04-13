@@ -13,7 +13,8 @@ from bitmath import Byte
 
 from .._textrenderer import (
     _render_memory, _render_container, _render_containers, _render_pods,
-    _render_nodes,
+    _render_pod, _render_nodes,
+    _Memory,
 )
 
 from txkube import v1
@@ -206,6 +207,31 @@ class PodTests(TestCase):
         self.assertEqual(
             ["bar", "foo"],
             list(line.split()[0].strip() for line in lines),
+        )
+
+    def test_render_pod(self):
+        pod_usage = {
+            "metadata": {
+                "name": "foo",
+                "namespace": "default",
+                "creationTimestamp": "2017-04-07T15:21:22Z"
+            },
+            "timestamp": "2017-04-07T15:21:00Z",
+            "window": "1m0s",
+            "containers": [
+                {
+                    "name": "foo-a",
+                    "usage": {
+                        "cpu": "100m",
+                        "memory": "128Ki"
+                    }
+                },
+            ]
+        }
+        fields = _render_pod(pod_usage, _Memory(Byte(1024 * 1024))).split()
+        self.assertEqual(
+            [u'foo', u'100', u'50.00', u'KiB', u'12.50'],
+            fields,
         )
 
 

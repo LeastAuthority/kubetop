@@ -172,17 +172,43 @@ def _render_node(node, usage, pods):
     )
 
 
+
 def _pod_on_node(pod, node):
     return pod.status is not None and pod.status.hostIP in (
         addr["address"] for addr in node["status"]["addresses"]
     )
 
 
+
+class _UnknownMemory(object):
+    def render(self):
+        return "???"
+
+
+    def render_percentage(self, portion):
+        return ""
+
+
+
+class _Memory(object):
+    def __init__(self, amount):
+        self.amount = amount
+
+
+    def render(self, fmt):
+        return _render_memory(self.amount, fmt)
+
+
+    def render_percentage(self, portion):
+        return "{:>5.2}".format(portion / self.amount * 100)
+
+
+
 def _node_allocable_memory(pod, nodes):
     for node in nodes:
         if _pod_on_node(pod, node):
-            return parse_memory(node["status"]["allocatable"]["memory"])
-    return None
+            return _Memory(parse_memory(node["status"]["allocatable"]["memory"]))
+    return _UnknownMemory()
 
 
 def _render_pods(pods, pod_usage, nodes):
@@ -236,12 +262,7 @@ def _pod_stats(pod):
 
 def _render_pod(pod, node_allocable_memory):
     cpu, mem = _pod_stats(pod)
-
-    if node_allocable_memory is None:
-        mem_percent = ""
-    else:
-        mem_percent = "{:>5.2}".format(mem / node_allocable_memory * 100)
-
+    mem_percent = node_allocable_memory.render_percentage(mem)
     return _render_row(
         pod["metadata"]["name"],
         "",
