@@ -275,7 +275,11 @@ def _pod_stats(pod):
 def _render_limited_width(s, w):
     if len(s) <= w:
         return s
-    return s[:w - 1] + "\N{HORIZONTAL ELLIPSIS}"
+    return (
+        s[:int(w / 2 - 1)] +
+        "\N{HORIZONTAL ELLIPSIS}" +
+        s[-int(w / 2):]
+    )
 
 
 def _render_pod(pod, node_allocable_memory):
