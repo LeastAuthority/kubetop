@@ -207,6 +207,15 @@ class _Memory(object):
 
 
 
+@attr.s(frozen=True)
+class _CPU(object):
+    # in millicpus
+    amount = attr.ib(validator=validators.instance_of(int))
+
+    def render_percentage(self, portion):
+        return "{:>5.2f}".format(portion.amount / self.amount * 100)
+
+
 def _node_allocable_memory(pod, nodes):
     for node in nodes:
         if _pod_on_node(pod, node):
@@ -260,7 +269,7 @@ def _pod_stats(pod):
             ),
         ), Byte(0),
     )
-    return (cpu, _Memory(mem))
+    return (_CPU(cpu), _Memory(mem))
 
 
 def _render_pod(pod, node_allocable_memory):
@@ -269,7 +278,7 @@ def _render_pod(pod, node_allocable_memory):
     return _render_row(
         pod["metadata"]["name"],
         "",
-        cpu,
+        _CPU(1000).render_percentage(cpu),
         mem.render("8.2"),
         mem_percent,
     )
