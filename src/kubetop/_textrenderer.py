@@ -272,11 +272,25 @@ def _pod_stats(pod):
     return (_CPU(cpu), _Memory(mem))
 
 
+def _render_limited_width(s, w):
+    if w < 3:
+        raise ValueError("Minimum rendering width is 3")
+    if len(s) <= w:
+        return s
+    return (
+        s[:int(round(w / 2 - 1))] +
+        "\N{HORIZONTAL ELLIPSIS}" +
+        s[-int(w / 2):]
+    )
+
+
 def _render_pod(pod, node_allocable_memory):
     cpu, mem = _pod_stats(pod)
     mem_percent = node_allocable_memory.render_percentage(mem)
     return _render_row(
-        pod["metadata"]["name"],
+        # Limit rendered name to combined width of the pod and container
+        # columns.
+        _render_limited_width(pod["metadata"]["name"], 46),
         "",
         _CPU(1000).render_percentage(cpu),
         mem.render("8.2"),
@@ -295,7 +309,7 @@ def _render_containers(containers):
 def _render_container(container):
     return _render_row(
         "",
-        "(" + container["name"] + ")",
+        _render_limited_width("(" + container["name"] + ")", 46),
         _CPU(1000).render_percentage(_CPU(parse_cpu(container["usage"]["cpu"]))),
         parse_memory(container["usage"]["memory"]).render("8.2"),
         "",

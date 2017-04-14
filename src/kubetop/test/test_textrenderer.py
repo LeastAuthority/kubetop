@@ -7,6 +7,9 @@ Tests for ``_textrenderer``.
 
 from __future__ import unicode_literals
 
+from hypothesis import given
+from hypothesis.strategies import integers, text
+
 from twisted.trial.unittest import TestCase
 
 from bitmath import Byte
@@ -14,10 +17,24 @@ from bitmath import Byte
 from .._textrenderer import (
     _render_container, _render_containers, _render_pods,
     _render_pod, _render_nodes,
+    _render_limited_width,
     _Memory,
 )
 
 from txkube import v1
+
+
+class RenderLimitedWidthTests(TestCase):
+    @given(integers(min_value=3), text())
+    def test_width(self, limit, long_text):
+        rendered = _render_limited_width(long_text, limit)
+        self.assertEqual(min(limit, len(long_text)), len(rendered))
+
+
+    @given(integers(max_value=2), text())
+    def test_too_narrow(self, limit, long_text):
+        with self.assertRaises(ValueError):
+            _render_limited_width(long_text, limit)
 
 
 class RenderMemoryTests(TestCase):

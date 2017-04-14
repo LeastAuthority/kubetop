@@ -25,6 +25,11 @@ setup(
         "treq",
         "txkube",
     ],
+    extras_require={
+        "dev": [
+            "hypothesis",
+        ],
+    },
     entry_points={
         "console_scripts": [
             "kubetop = kubetop._script:main",

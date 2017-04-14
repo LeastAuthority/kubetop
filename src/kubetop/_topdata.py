@@ -73,8 +73,28 @@ class _Source(object):
 
 
     def _pod_usage_from_client(self, client, base_url):
-        d = client.get(base_url.asText() + self.pod_location())
-        d.addCallback(json_content)
+        d = self.kubernetes.client().list(v1.Namespace)
+        def got_namespaces(namespaces):
+            d = gatherResults(
+                client.get(
+                    base_url.asText() + self.pod_location(ns.metadata.name)
+                ).addCallback(
+                    json_content
+                )
+                for ns
+                in namespaces.items
+            )
+            def combine(pod_usages):
+                result = []
+                for usage in pod_usages:
+                    if usage["items"] is None:
+                        continue
+                    for item in usage["items"]:
+                        result.append(item)
+                return {"items": result}
+            d.addCallback(combine)
+            return d
+        d.addCallback(got_namespaces)
         return d
 
 
@@ -82,13 +102,13 @@ class _Source(object):
         return client.list(v1.Pod)
 
 
-    def pod_location(self):
+    def pod_location(self, namespace):
         # kubectl --v=11 top pods
         return (
             "/api/v1/namespaces/kube-system/services/http:heapster:"
             "/proxy/apis/metrics/v1alpha1/namespaces/{namespace}/pods?"
             "labelSelector="
-        ).format(namespace="default")
+        ).format(namespace=namespace)
 
 
     def _node_usage_from_client(self, client, base_url):
