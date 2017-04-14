@@ -213,7 +213,7 @@ class _CPU(object):
     amount = attr.ib(validator=validators.instance_of(int))
 
     def render_percentage(self, portion):
-        return "{:>5.2f}".format(portion.amount / self.amount * 100)
+        return "{:>5.1f}".format(portion.amount / self.amount * 100)
 
 
 def _node_allocable_memory(pod, nodes):
