@@ -83,7 +83,7 @@ class ContainersTests(TestCase):
         self.assertEqual(
             "                    "
             "                     (foo)"
-            "        100m"
+            "        10.0"
             "  200.00 MiB"
             "       "
             "\n",
@@ -230,7 +230,7 @@ class PodTests(TestCase):
         }
         fields = _render_pod(pod_usage, _Memory(Byte(1024 * 1024))).split()
         self.assertEqual(
-            [u'foo', u'100', u'128.00', u'KiB', u'12.50'],
+            [u'foo', u'10.0', u'128.00', u'KiB', u'12.50'],
             fields,
         )
 
