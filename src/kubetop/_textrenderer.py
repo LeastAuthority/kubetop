@@ -273,10 +273,12 @@ def _pod_stats(pod):
 
 
 def _render_limited_width(s, w):
+    if w < 3:
+        raise ValueError("Minimum rendering width is 3")
     if len(s) <= w:
         return s
     return (
-        s[:int(w / 2 - 1)] +
+        s[:int(round(w / 2 - 1))] +
         "\N{HORIZONTAL ELLIPSIS}" +
         s[-int(w / 2):]
     )
