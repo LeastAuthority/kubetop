@@ -83,7 +83,7 @@ class ContainersTests(TestCase):
         self.assertEqual(
             "                    "
             "                     (foo)"
-            "        100m"
+            "       10.00"
             "  200.00 MiB"
             "       "
             "\n",

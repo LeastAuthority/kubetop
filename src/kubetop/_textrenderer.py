@@ -296,7 +296,7 @@ def _render_container(container):
     return _render_row(
         "",
         "(" + container["name"] + ")",
-        container["usage"]["cpu"],
+        _CPU(1000).render_percentage(_CPU(parse_cpu(container["usage"]["cpu"]))),
         parse_memory(container["usage"]["memory"]).render("8.2"),
         "",
     )
