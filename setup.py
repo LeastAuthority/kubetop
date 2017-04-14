@@ -19,6 +19,7 @@ setup(
     packages=find_packages(where="src"),
     install_requires=[
         "bitmath",
+        "attr",
         "pyyaml",
         "twisted[tls]",
         "treq",
