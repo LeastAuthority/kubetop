@@ -23,7 +23,7 @@ cache:
 
 install:
   - "pip install --upgrade pip setuptools wheel coverage codecov pyflakes"
-  - "pip install ."
+  - "pip install .[dev]"
 
 script:
   - "pyflakes src"
