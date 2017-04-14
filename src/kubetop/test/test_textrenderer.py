@@ -31,6 +31,12 @@ class RenderLimitedWidthTests(TestCase):
         self.assertEqual(min(limit, len(long_text)), len(rendered))
 
 
+    @given(integers(max_value=2), text())
+    def test_too_narrow(self, limit, long_text):
+        with self.assertRaises(ValueError):
+            _render_limited_width(long_text, limit)
+
+
 class RenderMemoryTests(TestCase):
     def test_bytes(self):
         self.assertEqual(
