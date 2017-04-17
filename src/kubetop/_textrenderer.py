@@ -13,6 +13,10 @@ Theory of Operation
 
 from __future__ import unicode_literals, division
 
+from struct import pack, unpack
+from termios import TIOCGWINSZ
+from fcntl import ioctl
+
 from twisted.internet.defer import gatherResults
 
 from datetime import datetime
@@ -35,6 +39,52 @@ def kubetop(reactor, datasource, datasink):
     return gatherResults([
         datasource.nodes(), datasource.pods(),
     ]).addCallback(_render_kubetop, datasink, reactor)
+
+
+
+@attr.s
+class Size(object):
+    rows = attr.ib()
+    columns = attr.ib()
+    xpixels = attr.ib()
+    ypixels = attr.ib()
+
+
+
+def terminal_size(terminal_fd):
+    s = pack('HHHH', 0, 0, 0, 0)
+    t = ioctl(terminal_fd, TIOCGWINSZ, s)
+    return Size(*unpack('HHHH', t))
+
+
+
+@attr.s
+class Terminal(object):
+    fd = attr.ib()
+
+    def size(self):
+        return terminal_size(self.fd)
+
+
+
+@attr.s
+class Sink(object):
+    terminal = attr.ib()
+    outfile = attr.ib()
+
+
+    @classmethod
+    def from_file(cls, outfile):
+        return cls(Terminal(outfile.fileno()), outfile)
+
+
+    def write(self, text):
+        size = self.terminal.size()
+        num_lines = size.rows
+        truncated = "\n".join(text.splitlines()[:num_lines])
+        self.outfile.write(truncated)
+        self.outfile.flush()
+
 
 
 def _render_kubetop(data, sink, reactor):

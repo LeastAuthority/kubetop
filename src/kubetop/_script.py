@@ -12,6 +12,8 @@ Theory of Operation
 #. Run the Twisted reactor.
 """
 
+from sys import __stdout__ as outfile
+
 from yaml import safe_load
 
 from itertools import repeat
@@ -22,7 +24,7 @@ from twisted.python.filepath import FilePath
 
 from ._twistmain import TwistMain
 from ._runmany import run_many_service
-from ._textrenderer import kubetop
+from ._textrenderer import Sink, kubetop
 
 CONFIG = FilePath(expanduser("~/.kube/config"))
 
@@ -56,8 +58,7 @@ def makeService(main, options):
     # That breaks TwistMain unless we delay it until makeService is called.
     from ._topdata import make_source
 
-    import sys
-    f = lambda: kubetop(reactor, s, sys.__stdout__)
+    f = lambda: kubetop(reactor, s, Sink.from_file(outfile))
 
     s = make_source(reactor, CONFIG, options["context"])
     return run_many_service(

@@ -7,6 +7,8 @@ Tests for ``_textrenderer``.
 
 from __future__ import unicode_literals
 
+from io import StringIO as TextIO
+
 from hypothesis import given
 from hypothesis.strategies import integers, text
 
@@ -14,11 +16,14 @@ from twisted.trial.unittest import TestCase
 
 from bitmath import Byte
 
+import attr
+
 from .._textrenderer import (
     _render_container, _render_containers, _render_pods,
     _render_pod, _render_nodes,
     _render_limited_width,
     _Memory,
+    Size, Sink,
 )
 
 from txkube import v1
@@ -408,4 +413,39 @@ class NodeTests(TestCase):
             "POD%  0.91 (  1/110) "
             "Ready\n",
             _render_nodes([node], [usage], pods),
+        )
+
+
+
+@attr.s
+class StubTerminal(object):
+    _size = attr.ib()
+
+    def size(self):
+        return self._size
+
+
+
+class SinkTests(TestCase):
+    def test_maximum_rows(self):
+        """
+        Any single string passed to ``Sink.write`` gets limited to the number of
+        rows available on the sink.
+        """
+        size = Size(rows=3, columns=80, xpixels=3, ypixels=7)
+        outfile = TextIO()
+        sink = Sink(
+            terminal=StubTerminal(size=size), outfile=outfile,
+        )
+        lines = list(
+            "Hello {}\n".format(n)
+            for n
+            in range(size.rows + 1)
+        )
+        sink.write("".join(lines))
+        self.assertEqual(
+            lines[:size.rows],
+            list(
+                line + "\n" for line in outfile.getvalue().splitlines()
+            ),
         )
