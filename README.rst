@@ -66,7 +66,9 @@ Version
 
 kubetop uses the `CalVer`_ versioning convention.
 The first three segments of a kubetop version tell you the year (two digit), month, and day that version was released.
-
+The fourth segment of a kubetop version is a bugfix release counter.
+It is present if a new release is made that diffs from a previous release only by including one or more bug fixes.
+For each bug fix release, the fourth segment is incremented.
 
 License
 -------
