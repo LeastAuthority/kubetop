@@ -60,6 +60,13 @@ After installing the development dependencies, you can run the test suite with t
   $ pip install kubetop[dev]
   $ trial kubetop
 
+Version
+-------
+
+kubetop uses the `CalVer`_ versioning convention.
+The first three segments of a kubetop version tell you the year (two digit), month, and day that version was released.
+
+
 License
 -------
 
@@ -68,3 +75,4 @@ See the LICENSE file for more details.
 
 
 .. _Kubernetes: https://kubernetes.io/
+.. _CalVer: http://calver.org/
