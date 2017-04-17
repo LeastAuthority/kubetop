@@ -30,19 +30,20 @@ Output Sample
 
 .. code-block::
 
-   kubetop - 13:04:31
-   Node 0 CPU%  10.20 MEM% 55.63 (   2 GiB/   4 GiB)  POD%  7.27 (  8/110) Ready
-   Node 1 CPU%   6.70 MEM% 26.84 (1011 MiB/   4 GiB)  POD%  7.27 (  8/110) Ready
-   Node 2 CPU%  11.90 MEM% 36.53 (   1 GiB/   4 GiB)  POD%  0.91 (  1/110) Ready
-   Pods:     123 total      7 Running     3 Terminating     1 Pending
+   kubetop - 13:02:57
+   Node 0 CPU%   9.80 MEM% 57.97 (   2 GiB/   4 GiB)  POD%  7.27 (  8/110) Ready
+   Node 1 CPU%  21.20 MEM% 59.36 (   2 GiB/   4 GiB)  POD%  3.64 (  4/110) Ready
+   Node 2 CPU%  99.90 MEM% 58.11 (   2 GiB/   4 GiB)  POD%  7.27 (  8/110) Ready
+   Pods:       20 total        0 running        0 terminating        0 pending
                     POD               (CONTAINER)        %CPU         MEM   %MEM
-   s4-infrastructure-216976705-nkn7r                        1  127.43 MiB   3.10
-                                            (web)          1m   45.88 MiB
-                                          (flapp)           0   35.28 MiB
-                                 (wormhole-relay)           0   24.80 MiB
-                          (foolscap-log-gatherer)           0   21.47 MiB
-   image-building-3987116516-g6s93                          0   13.34 MiB   0.31
-                                 (image-building)           0   13.34 MiB
+   s4-infrastructure-3073578190-2k2vw                    75.5  782.05 MiB  20.76
+                         (subscription-converger)        72.7  459.11 MiB
+                                    (grid-router)         2.7   98.07 MiB
+                                            (web)         0.1   67.61 MiB
+                           (subscription-manager)         0.0   91.62 MiB
+                          (foolscap-log-gatherer)         0.0   21.98 MiB
+                                          (flapp)         0.0   21.46 MiB
+                                 (wormhole-relay)         0.0   22.19 MiB
 
 Installing
 ----------
@@ -60,6 +61,15 @@ After installing the development dependencies, you can run the test suite with t
   $ pip install kubetop[dev]
   $ trial kubetop
 
+Version
+-------
+
+kubetop uses the `CalVer`_ versioning convention.
+The first three segments of a kubetop version tell you the year (two digit), month, and day that version was released.
+The fourth segment of a kubetop version is a bugfix release counter.
+It is present if a new release is made that diffs from a previous release only by including one or more bug fixes.
+For each bug fix release, the fourth segment is incremented.
+
 License
 -------
 
@@ -68,3 +78,4 @@ See the LICENSE file for more details.
 
 
 .. _Kubernetes: https://kubernetes.io/
+.. _CalVer: http://calver.org/
