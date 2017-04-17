@@ -88,7 +88,9 @@ class Sink(object):
 
 
 def _render_kubetop(data, sink, reactor):
-    sink.write(_render_pod_top(reactor, data))
+    sink.write(_render_pod_top(
+        datetime.utcfromtimestamp(reactor.seconds()), data,
+    ))
 
 
 def _render_row(*values):
@@ -105,13 +107,13 @@ def _clear():
     return "\x1b[2J\x1b[1;1H"
 
 
-def _render_clockline(reactor):
+def _render_clockline(when):
     return "kubetop - {}\n".format(
-        datetime.fromtimestamp(reactor.seconds()).strftime("%H:%M:%S")
+        when.strftime("%H:%M:%S")
     )
 
 
-def _render_pod_top(reactor, (node_info, pod_info)):
+def _render_pod_top(when, (node_info, pod_info)):
     nodes = node_info["info"]["items"]
     node_usage = node_info["usage"]["items"]
 
@@ -120,7 +122,7 @@ def _render_pod_top(reactor, (node_info, pod_info)):
 
     return "".join((
         _clear(),
-        _render_clockline(reactor),
+        _render_clockline(when),
         _render_nodes(nodes, node_usage, pods),
         _render_pod_phase_counts(pods),
         _render_header(nodes, pods),
