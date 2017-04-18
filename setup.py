@@ -12,7 +12,7 @@ setup(
     version=_metadata["version_string"],
     description="A top(1)-like tool for Kubernetes.",
     author="kubetop Developers",
-    url="https://github.com/leastauthority.com/kubetop",
+    url="https://github.com/leastauthority/kubetop",
     license="MIT",
     zip_safe=False,
     package_dir={"": "src"},
