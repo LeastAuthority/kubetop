@@ -13,33 +13,8 @@ Theory of Operation
 #. Deliver rendering success/failure to the main object for reporting and exit.
 """
 
-from twisted.internet.defer import inlineCallbacks
-from twisted.internet.task import deferLater
 
 from ._runonce import run_once_service
-
-@inlineCallbacks
-def _iterate(reactor, intervals, f):
-    """
-    Run a function repeatedly.
-
-    :param reactor: See ``run_many_service``.
-
-    :return Deferred: A deferred which fires when ``f`` fails or when
-        ``intervals`` is exhausted.
-    """
-    while True:
-        before = reactor.seconds()
-        yield f()
-        after = reactor.seconds()
-        try:
-            interval = next(intervals)
-        except StopIteration:
-            break
-        delay = max(0, interval - (after - before))
-        yield deferLater(reactor, delay, lambda: None)
-
-
 
 def run_many_service(main, reactor, f, intervals):
     """

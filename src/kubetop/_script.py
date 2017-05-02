@@ -12,19 +12,24 @@ Theory of Operation
 #. Run the Twisted reactor.
 """
 
+# Get the one that twisted.logger has not monkeyed with.
 from sys import __stdout__ as outfile
-
-from yaml import safe_load
-
 from itertools import repeat
 from os.path import expanduser
 
+from yaml import safe_load
+
+import attr
+
 from twisted.python.usage import Options
 from twisted.python.filepath import FilePath
+from twisted.internet.defer import Deferred
 
+from ._runonce import run_once_service
 from ._twistmain import TwistMain
-from ._runmany import run_many_service
-from ._textrenderer import Sink, kubetop
+from ._textrenderer import Sink
+from ._tubes import clock_signal, kubetop_series
+
 
 CONFIG = FilePath(expanduser("~/.kube/config"))
 
@@ -50,6 +55,28 @@ def fixed_intervals(interval, iterations):
 
 
 
+@attr.s
+class _CloseNotifyingFile(object):
+    _file = attr.ib()
+    _notify = attr.ib()
+
+
+    def write(self, data):
+        return self._file.write(data)
+
+
+    def fileno(self):
+        return self._file.fileno()
+
+
+    def close(self):
+        try:
+            return self._file.close()
+        finally:
+            self._notify()
+
+
+
 def makeService(main, options):
     from twisted.internet import reactor
 
@@ -58,13 +85,20 @@ def makeService(main, options):
     # That breaks TwistMain unless we delay it until makeService is called.
     from ._topdata import make_source
 
-    f = lambda: kubetop(reactor, s, Sink.from_file(outfile))
+    def run_kubetop():
+        done = Deferred()
+        fount = clock_signal(
+            reactor=reactor,
+            intervals=fixed_intervals(options["interval"], options["iterations"]),
+        )
+        series = kubetop_series(
+            make_source(reactor, CONFIG, options["context"]),
+            _CloseNotifyingFile(Sink.from_file(outfile), lambda: done.callback(None)),
+        )
+        fount.flowTo(series)
+        return done
 
-    s = make_source(reactor, CONFIG, options["context"])
-    return run_many_service(
-        main, reactor, f,
-        fixed_intervals(options["interval"], options["iterations"]),
-    )
+    return run_once_service(main, reactor, run_kubetop)
 
 
 main = TwistMain(KubetopOptions, makeService)

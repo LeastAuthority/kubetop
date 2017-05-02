@@ -86,6 +86,14 @@ class Sink(object):
         self.outfile.flush()
 
 
+    def fileno(self):
+        return self.outfile.fileno()
+
+
+    def close(self):
+        return self.outfile.close()
+
+
 
 def _render_kubetop(data, sink, reactor):
     sink.write(_render_pod_top(
