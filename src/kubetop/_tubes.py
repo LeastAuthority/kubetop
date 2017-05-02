@@ -134,7 +134,6 @@ class _FileLike(object):
 
     def receive(self, item):
         self._output.write(item)
-        self._output.flush()
         return 0.0
 
 
