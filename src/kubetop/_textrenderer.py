@@ -80,10 +80,18 @@ class Sink(object):
 
     def write(self, text):
         size = self.terminal.size()
+        print("Sink.write with size", size)
         num_lines = size.rows
         truncated = "\n".join(text.splitlines()[:num_lines])
+        print("Sink.write truncated to", len(truncated))
         self.outfile.write(truncated)
-        self.outfile.flush()
+        print("Sink.write wrote")
+        try:
+            self.outfile.flush()
+        except Exception as e:
+            print("Flush failed", e)
+        else:
+            print("Sink.write flushed")
 
 
     def fileno(self):

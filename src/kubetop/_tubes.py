@@ -29,6 +29,7 @@ def _iterate(reactor, intervals, f):
     """
     while True:
         before = reactor.seconds()
+        print("Iterating")
         yield f()
         after = reactor.seconds()
         try:
@@ -73,7 +74,9 @@ class _ClockSignal(object):
 
 
     def _signal(self, *a, **kw):
+        print("Signaling")
         self.drain.receive(datetime.utcfromtimestamp(self._reactor.seconds()))
+        print("Signaled")
 
 
     def _died(self, reason=None):
@@ -100,11 +103,13 @@ class _Retriever(object):
     source = attr.ib()
 
     def received(self, timestamp):
+        print("Retrieving")
         yield gatherResults([
             succeed(timestamp),
             self.source.nodes(),
             self.source.pods(),
         ])
+        print("Retrieved")
 
 
 
@@ -115,8 +120,9 @@ def retrieve(source):
 
 @receiver(inputType=ITimestamp, outputType=IFrame, name="kubetop")
 def kubetop((when, node_info, pod_info)):
+    print("Rendering")
     yield _render_pod_top(when, (node_info, pod_info))
-
+    print("Rendered")
 
 
 @attr.s
@@ -133,13 +139,15 @@ class _FileLike(object):
 
 
     def receive(self, item):
-        self._output.write(item)
-        return 0.0
+        print("Writing")
+        self._output.write(str(hash(item)) + "\n")
+        print("Wrote")
 
 
     def flowStopped(self, reason):
         print("flowStopped", reason)
         self._output.close()
+        print("Stopped")
 
 
 
