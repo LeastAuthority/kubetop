@@ -49,7 +49,7 @@ Installing
 ----------
 
 Pip / Pipsi
-~~~
+~~~~~~~~~~~
 
 To install the latest version of kubetop using `pip`_ or `pipsi`_::
 
