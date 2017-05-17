@@ -48,9 +48,20 @@ Output Sample
 Installing
 ----------
 
-To install the latest version of kubetop using pip::
+Pip / Pipsi
+~~~
 
-  $ pip install kubetop
+To install the latest version of kubetop using `pip`_ or `pipsi`_::
+
+  $ pipsi install kubetop
+
+Docker
+~~~~~~
+
+A Docker image containing a kubetop installation is also available.
+You can run it like this::
+
+  $ docker run -it --rm --volume ~/.kube/:/root/.kube/:ro exarkun/kubetop
 
 Testing
 -------
@@ -79,3 +90,5 @@ See the LICENSE file for more details.
 
 .. _Kubernetes: https://kubernetes.io/
 .. _CalVer: http://calver.org/
+.. _pip: https://pip.pypa.io/en/stable/
+.. _pipsi: https://pypi.python.org/pypi/pipsi
