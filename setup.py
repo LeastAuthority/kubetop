@@ -21,7 +21,7 @@ setup(
         "bitmath",
         "attr",
         "pyyaml",
-        "twisted[tls]",
+        "twisted[tls]!=17.1.0",
         "treq",
         "txkube",
     ],
