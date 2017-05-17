@@ -38,10 +38,15 @@ def current_context(config_path):
 class KubetopOptions(Options):
     optParameters = [
         ("config", None, DEFAULT_CONFIG, "The path to the kubectl config to use."),
-        ("context", None, current_context(DEFAULT_CONFIG_FILE_PATH), "The kubectl context to use."),
+        ("context", None, None, "The kubectl context to use. If not set, this will default to the 'current-context' of the 'config'."),
         ("interval", None, 3.0, "The number of seconds between iterations.", float),
         ("iterations", None, None, "The number of iterations to perform.", int),
     ]
+
+    def postOptions(self):
+        # Calculate the context as a post action instead of setting a default value in optParameters since
+        # kubetop should use/show the context of any overridden 'config'
+        self['context'] = current_context(FilePath(expanduser(self['config'])))
 
 
 
