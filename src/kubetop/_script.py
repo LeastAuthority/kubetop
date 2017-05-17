@@ -26,7 +26,8 @@ from ._twistmain import TwistMain
 from ._runmany import run_many_service
 from ._textrenderer import Sink, kubetop
 
-CONFIG = FilePath(expanduser("~/.kube/config"))
+DEFAULT_CONFIG = "~/.kube/config"
+DEFAULT_CONFIG_FILE_PATH = FilePath(expanduser(DEFAULT_CONFIG))
 
 
 def current_context(config_path):
@@ -36,7 +37,8 @@ def current_context(config_path):
 
 class KubetopOptions(Options):
     optParameters = [
-        ("context", None, current_context(CONFIG), "The kubectl context to use."),
+        ("config", None, DEFAULT_CONFIG, "The path to the kubectl config to use."),
+        ("context", None, current_context(DEFAULT_CONFIG_FILE_PATH), "The kubectl context to use."),
         ("interval", None, 3.0, "The number of seconds between iterations.", float),
         ("iterations", None, None, "The number of iterations to perform.", int),
     ]
@@ -60,7 +62,7 @@ def makeService(main, options):
 
     f = lambda: kubetop(reactor, s, Sink.from_file(outfile))
 
-    s = make_source(reactor, CONFIG, options["context"])
+    s = make_source(reactor, FilePath(expanduser(options["config"])), options["context"])
     return run_many_service(
         main, reactor, f,
         fixed_intervals(options["interval"], options["iterations"]),
