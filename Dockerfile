@@ -19,5 +19,5 @@ RUN pip install --no-cache-dir .
 
 # Set the kubetop cli program as the entrypoint.
 # This lets arguments be passed by the user without too much trouble.
-# Just add the to the end of the `docker run ...` command.
+# Just add them to the end of the `docker run ...` command.
 ENTRYPOINT ["kubetop"]
