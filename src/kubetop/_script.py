@@ -27,11 +27,8 @@ from ._twistmain import TwistMain
 from ._runmany import run_many_service
 from ._textrenderer import Sink, kubetop
 
-configPath = "~/.kube/config"
 
-if os.environ['KUBECONFIG']:
-    configPath = os.environ['KUBECONFIG']
-
+configPath = os.getenv('KUBECONFIG', "~/.kube/config")
 CONFIG = FilePath(expanduser(configPath))
 
 def current_context(config_path):
