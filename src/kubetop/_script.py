@@ -18,6 +18,7 @@ from yaml import safe_load
 
 from itertools import repeat
 from os.path import expanduser
+import os
 
 from twisted.python.usage import Options
 from twisted.python.filepath import FilePath
@@ -26,9 +27,8 @@ from ._twistmain import TwistMain
 from ._runmany import run_many_service
 from ._textrenderer import Sink, kubetop
 
-DEFAULT_CONFIG = "~/.kube/config"
+DEFAULT_CONFIG = os.getenv('KUBECONFIG', "~/.kube/config")
 DEFAULT_CONFIG_FILE_PATH = FilePath(expanduser(DEFAULT_CONFIG))
-
 
 def current_context(config_path):
     with config_path.open() as cfg:
