@@ -27,9 +27,8 @@ from ._twistmain import TwistMain
 from ._runmany import run_many_service
 from ._textrenderer import Sink, kubetop
 
-
-configPath = os.getenv('KUBECONFIG', "~/.kube/config")
-CONFIG = FilePath(expanduser(configPath))
+DEFAULT_CONFIG = os.getenv('KUBECONFIG', "~/.kube/config")
+DEFAULT_CONFIG_FILE_PATH = FilePath(expanduser(DEFAULT_CONFIG))
 
 def current_context(config_path):
     with config_path.open() as cfg:
@@ -38,10 +37,16 @@ def current_context(config_path):
 
 class KubetopOptions(Options):
     optParameters = [
-        ("context", None, current_context(CONFIG), "The kubectl context to use."),
+        ("config", None, DEFAULT_CONFIG, "The path to the kubectl config to use."),
+        ("context", None, None, "The kubectl context to use. If not set, this will default to the 'current-context' of the 'config'."),
         ("interval", None, 3.0, "The number of seconds between iterations.", float),
         ("iterations", None, None, "The number of iterations to perform.", int),
     ]
+
+    def postOptions(self):
+        # Calculate the context as a post action instead of setting a default value in optParameters since
+        # kubetop should use/show the context of any overridden 'config'
+        self['context'] = current_context(FilePath(expanduser(self['config'])))
 
 
 
@@ -62,7 +67,7 @@ def makeService(main, options):
 
     f = lambda: kubetop(reactor, s, Sink.from_file(outfile))
 
-    s = make_source(reactor, CONFIG, options["context"])
+    s = make_source(reactor, FilePath(expanduser(options["config"])), options["context"])
     return run_many_service(
         main, reactor, f,
         fixed_intervals(options["interval"], options["iterations"]),
