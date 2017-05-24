@@ -22,14 +22,16 @@ import attr.validators
 from treq import json_content
 from treq.client import HTTPClient
 
-from txkube import IKubernetes, v1, network_kubernetes_from_context
+from txkube import IKubernetes, network_kubernetes_from_context
 
 
 def make_source(reactor, config_path, context_name):
     """
     Get a source of Kubernetes resource usage data.
     """
-    kubernetes = network_kubernetes_from_context(reactor, context_name, config_path)
+    kubernetes = network_kubernetes_from_context(
+        reactor, context_name, config_path
+    )
     return _Source(kubernetes=kubernetes)
 
 
@@ -37,43 +39,49 @@ def make_source(reactor, config_path, context_name):
 class _Source(object):
     kubernetes = attr.ib(validator=attr.validators.provides(IKubernetes))
 
-
     def pods(self):
-        client = self._client()
         base_url = self.kubernetes.base_url
-        return gatherResults([
-            self._pod_usage_from_client(client, base_url),
-            self._pod_info(self.kubernetes.client()),
-        ]).addCallback(
-            lambda (usage, info): {
-                "usage": usage,
-                "info": info,
-            },
-        )
+        d = self._client()
 
+        def _pods(client):
+            return gatherResults([
+                self._pod_usage_from_client(client, base_url),
+                self.kubernetes.versioned_client().addCallback(self._pod_info),
+            ]).addCallback(
+                lambda (usage, info): {
+                    "usage": usage,
+                    "info": info,
+                },
+            )
+        d.addCallback(_pods)
+        return d
 
     def nodes(self):
-        client = self._client()
         base_url = self.kubernetes.base_url
-        return gatherResults([
-            self._node_usage_from_client(client, base_url),
-            self._node_info_from_client(client, base_url),
-        ]).addCallback(
-            lambda (usage, info): {
-                "usage": usage,
-                "info": info,
-            },
-        )
+        d = self._client()
 
+        def _nodes(client):
+            return gatherResults([
+                self._node_usage_from_client(client, base_url),
+                self._node_info_from_client(client, base_url),
+            ]).addCallback(
+                lambda (usage, info): {
+                    "usage": usage,
+                    "info": info,
+                },
+            )
+        d.addCallback(_nodes)
+        return d
 
     def _client(self):
-        k8s_client = self.kubernetes.client()
-        agent = k8s_client.agent
-        return HTTPClient(agent=agent)
-
+        d = self.kubernetes.versioned_client()
+        d.addCallback(lambda client: HTTPClient(agent=client.agent))
+        return d
 
     def _pod_usage_from_client(self, client, base_url):
-        d = self.kubernetes.client().list(v1.Namespace)
+        d = self.kubernetes.versioned_client()
+        d.addCallback(lambda client: client.list(client.model.v1.Namespace))
+
         def got_namespaces(namespaces):
             d = gatherResults(
                 client.get(
@@ -84,6 +92,7 @@ class _Source(object):
                 for ns
                 in namespaces.items
             )
+
             def combine(pod_usages):
                 result = []
                 for usage in pod_usages:
@@ -97,10 +106,8 @@ class _Source(object):
         d.addCallback(got_namespaces)
         return d
 
-
     def _pod_info(self, client):
-        return client.list(v1.Pod)
-
+        return client.list(client.model.v1.Pod)
 
     def pod_location(self, namespace):
         # kubectl --v=11 top pods
@@ -110,12 +117,10 @@ class _Source(object):
             "labelSelector="
         ).format(namespace=namespace)
 
-
     def _node_usage_from_client(self, client, base_url):
         d = client.get(base_url.asText() + self.node_location())
         d.addCallback(json_content)
         return d
-
 
     def node_location(self):
         # url-hacked from pod_location... I found no docs that clearly explain
@@ -127,7 +132,6 @@ class _Source(object):
             "/api/v1/namespaces/kube-system/services/http:heapster:"
             "/proxy/apis/metrics/v1alpha1/nodes"
         )
-
 
     def _node_info_from_client(self, client, base_url):
         d = client.get(base_url.asText() + "/api/v1/nodes")
