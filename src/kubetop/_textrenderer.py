@@ -111,7 +111,8 @@ def _render_clockline(reactor):
     )
 
 
-def _render_pod_top(reactor, (node_info, pod_info)):
+def _render_pod_top(reactor, data):
+    (node_info, pod_info) = data
     nodes = node_info["info"]["items"]
     node_usage = node_info["usage"]["items"]
 
