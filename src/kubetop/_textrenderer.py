@@ -18,6 +18,7 @@ from termios import TIOCGWINSZ
 from fcntl import ioctl
 
 from twisted.internet.defer import gatherResults
+from twisted.python.compat import unicode
 
 from datetime import datetime
 
