@@ -48,9 +48,9 @@ class _Source(object):
                 self._pod_usage_from_client(client, base_url),
                 self.kubernetes.versioned_client().addCallback(self._pod_info),
             ]).addCallback(
-                lambda (usage, info): {
-                    "usage": usage,
-                    "info": info,
+                lambda usage_info: {
+                    "usage": usage_info[0],
+                    "info": usage_info[1],
                 },
             )
         d.addCallback(_pods)
@@ -65,9 +65,9 @@ class _Source(object):
                 self._node_usage_from_client(client, base_url),
                 self._node_info_from_client(client, base_url),
             ]).addCallback(
-                lambda (usage, info): {
-                    "usage": usage,
-                    "info": info,
+                lambda usage_info: {
+                    "usage": usage_info[0],
+                    "info": usage_info[1],
                 },
             )
         d.addCallback(_nodes)
