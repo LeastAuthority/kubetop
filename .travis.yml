@@ -15,6 +15,13 @@ branches:
   only:
     - "master"
 
+matrix:
+  include:
+    - python: 2.7
+    - python: 3.6
+  allow_failures:
+    - python: 3.6
+
 cache:
   directories:
     # Cache the pip download cache across runs to avoid having to
@@ -27,9 +34,9 @@ install:
 
 script:
   - "pyflakes src"
-  - "coverage run --rcfile=${PWD}/.coveragerc $(type -p trial) kubetop"
+  - "python -Wdefault::DeprecationWarning -m coverage run --rcfile=${PWD}/.coveragerc -m twisted.trial kubetop"
   # See .coveragerc for an explanation of this step.
-  - "coverage combine .coverage"
+  - "python -m coverage combine .coverage"
 
-after_success:
+after_script:
   - "codecov"
