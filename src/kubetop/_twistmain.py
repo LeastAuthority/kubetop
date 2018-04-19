@@ -72,10 +72,20 @@ class TwistMain(object):
         ]
 
         t = Twist()
+
+        log_flag = u"--log-file"
+        log_file = u"~/.kubetop.log"
+        app_name = u"kubetop"
+        if str is bytes:
+            # sys.argv must be bytes Python 2
+            log_flag = log_flag.encode("ascii")
+            log_file = log_file.encode("ascii")
+            app_name = app_name.encode("ascii")
+
         t.main([
             argv[0],
-            b"--log-file", expanduser(b"~/.kubetop.log"),
-            b"kubetop",
+            log_flag, expanduser(log_file),
+            app_name,
         ] + argv[1:])
 
         if self.exit_message:
