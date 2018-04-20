@@ -370,8 +370,8 @@ def _render_container(container):
 
 def partition(seq, pred):
     return (
-        filter(pred, seq),
-        filter(lambda x: not pred(x), seq),
+        u"".join(x for x in seq if pred(x)),
+        u"".join(x for x in seq if not pred(x)),
     )
 
 
