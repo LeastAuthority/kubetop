@@ -23,7 +23,7 @@ setup(
         "pyyaml",
         "twisted[tls]>=17.9.0",
         "treq",
-        "txkube",
+        "txkube>=0.3.0",
     ],
     extras_require={
         "dev": [
