@@ -19,11 +19,11 @@ setup(
     packages=find_packages(where="src"),
     install_requires=[
         "bitmath",
-        "attrs",
+        "attrs>=17.4.0",
         "pyyaml",
-        "twisted[tls]!=17.1.0",
+        "twisted[tls]>=17.9.0",
         "treq",
-        "txkube",
+        "txkube>=0.3.0",
     ],
     extras_require={
         "dev": [
