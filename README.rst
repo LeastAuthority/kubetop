@@ -51,6 +51,8 @@ Installing
 Pip / Pipsi
 ~~~~~~~~~~~
 
+Python 2.7 is required to run kubetop.
+
 To install the latest version of kubetop using `pip`_ or `pipsi`_::
 
   $ pipsi install kubetop
