@@ -18,6 +18,8 @@ What is this?
 
 kubetop is a top(1)-like tool for `Kubernetes`_.
 
+**NOTE** kubetop does not work against recent versions of Kubernetes anymore due to Kubernetes API changes.  This is not expected to change in the near future.  Patches welcome.
+
 Usage Sample
 ------------
 
